@@ -38,5 +38,6 @@ docker push ghcr.io/<GH username>/<PATH Back>:latest
 
 ## Run docker compose
 
-console
+```
 docker-compose --file docker-compose.yml --env-file=.env up -d --remove-orphans
+```
