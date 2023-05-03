@@ -1,0 +1,60 @@
+version: "3.9"
+services:
+  api:
+    image: ghcr.io/<GH username>/<PATH backend>
+    container_name: api
+    depends_on:
+      - postgres
+    links:
+      - postgres
+    restart: always
+    init: true
+    environment:
+      NODE_ENV: "production"
+      POSTGRES_DB: test
+      POSTGRES_HOST: "postgres:5432"
+      POSTGRES_PASS: ${POSTGRES_PASSWORD}
+      POSTGRES_USER: ${POSTGRES_USER}
+      SENTRY_DSN: ${SENTRY_DSN}
+    ports:
+      - "5050:5050"
+
+  frontend:
+    image: ghcr.io/<GH username>/<PATH front>
+    container_name: frontend
+    init: true
+    environment:
+      NODE_ENV: "production"
+    volumes:
+      - public:/app/public
+
+  postgres:
+    container_name: postgres
+    image: "postgres"
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+    restart: always
+    links:
+      - api
+      - frontend
+    depends_on:
+      - api
+      - frontend
+    volumes:
+      - ./nginx-conf/:/etc/nginx/conf.d/
+      - public:/app/build:ro
+
+volumes:
+  public:
